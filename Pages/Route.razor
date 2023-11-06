@@ -1,0 +1,63 @@
+﻿@page "/route"
+@inject IJSRuntime jsRuntime;
+<h3>Route</h3>
+<br/>
+<div class="form-group mb-3">
+    <label for="sourceLocation">Source Location:</label>
+    <input type="text" class="form-control" id="sourceLocation" style="max-width: 720px;" @bind="sourceLocation" />
+</div>
+
+<br/>
+<div class="form-group mb-3">
+    <label for="destinationLocation">Destination Location:</label>
+    <input type="text" class="form-control" id="destinationLocation" style="max-width: 720px;" @bind="destinationLocation" />
+</div>
+<br />
+<div class="form-row mb-3">
+    <div class="col">
+        <label for="startTime">Departure Start Time:</label>
+        <input type="time" class="form-control" id="startTime" style="max-width: 150px;" @bind="startTime" />
+    </div>
+    <br />
+    <div class="col">
+        <label for="endTime">Departure End Time:</label>
+        <input type="time" class="form-control" id="endTime" style="max-width: 150px;" @bind="endTime" />
+    </div>
+    <br />
+</div>
+
+<button class="btn btn-primary" @onclick="SaveRoute">Save</button>
+
+@code {
+    private string sourceLocation { get; set; }
+    private string destinationLocation { get; set; }
+    private DateTime startTime { get; set; }
+    private DateTime endTime { get; set; }
+
+    private void SaveRoute()
+    {
+        if (string.IsNullOrWhiteSpace(sourceLocation) || string.IsNullOrWhiteSpace(destinationLocation) ||
+            startTime == default || endTime == default)
+        {
+            ShowErrorMessage("All fields are required.");
+            return;
+        }
+
+        if (endTime < startTime)
+        {
+            ShowErrorMessage("End time must be greater than start time.");
+            return;
+        }
+
+        if (endTime - startTime > TimeSpan.FromHours(4))
+        {
+            ShowErrorMessage("Time difference must be less than or equal to 4 hours.");
+            return;
+        }
+    }
+
+    private async void ShowErrorMessage(string message)
+    {
+        await jsRuntime.InvokeVoidAsync("alert", message);
+    }
+}
