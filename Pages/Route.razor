@@ -1,16 +1,24 @@
 ﻿@page "/route"
+@using TrafficEscape.Models;
+@using TrafficEscape.Services.Interfaces;
 @inject IJSRuntime jsRuntime;
+@inject IGooglePlaceService googlePlaceService;
+
 <h3>Route</h3>
 <br/>
+<h3>Route</h3>
+<br />
 <div class="form-group mb-3">
     <label for="sourceLocation">Source Location:</label>
-    <input type="text" class="form-control" id="sourceLocation" style="max-width: 720px;" @bind="sourceLocation" />
+    <input type="text" class="form-control" id="sourceLocation" style="max-width: 720px;"
+    @bind="sourceLocation" @oninput="OnSourceLocationInput" />
 </div>
 
-<br/>
+<br />
 <div class="form-group mb-3">
     <label for="destinationLocation">Destination Location:</label>
-    <input type="text" class="form-control" id="destinationLocation" style="max-width: 720px;" @bind="destinationLocation" />
+    <input type="text" class="form-control" id="destinationLocation" style="max-width: 720px;"
+    @bind="destinationLocation" @oninput="OnDestinationLocationInput" />
 </div>
 <br />
 <div class="form-row mb-3">
@@ -33,6 +41,33 @@
     private string destinationLocation { get; set; }
     private DateTime startTime { get; set; }
     private DateTime endTime { get; set; }
+    private List<string> sourceSuggestions { get; set; } = new List<string>();
+    private List<string> destinationSuggestions { get; set; } = new List<string>();
+    private System.Threading.Timer sourceTimer;
+    private System.Threading.Timer destinationTimer;
+
+    private async void OnSourceLocationInput(ChangeEventArgs e)
+    {
+        sourceLocation = e.Value.ToString();
+        sourceTimer?.Dispose(); // Dispose previous timer if it exists
+        sourceTimer = new System.Threading.Timer((state) =>
+        {
+            IEnumerable<PlacePrediction> placePredictions = googlePlaceService.GetSuggestionsAsync(sourceLocation).Result;
+
+            StateHasChanged(); // Trigger re-render after suggestions are updated
+        }, null, 2000, System.Threading.Timeout.Infinite);
+    }
+
+    private async void OnDestinationLocationInput(ChangeEventArgs e)
+    {
+        destinationLocation = e.Value.ToString();
+        destinationTimer?.Dispose(); // Dispose previous timer if it exists
+        destinationTimer = new System.Threading.Timer((state) =>
+        {
+            IEnumerable<PlacePrediction> placePredictions = googlePlaceService.GetSuggestionsAsync(destinationLocation).Result;
+            StateHasChanged(); // Trigger re-render after suggestions are updated
+        }, null, 2000, System.Threading.Timeout.Infinite);
+    }
 
     private void SaveRoute()
     {
