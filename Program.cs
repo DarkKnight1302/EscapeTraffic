@@ -1,8 +1,10 @@
+using FluentEmail.MailKitSmtp;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
 using TrafficEscape.Areas.Identity;
@@ -13,17 +15,33 @@ using TrafficEscape.Services.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? Environment.GetEnvironmentVariable("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection1") ?? Environment.GetEnvironmentVariable("DefaultConnection1");
+var password = builder.Configuration.GetValue<string>("COLLEAGUE_CASTLE_EMAIL_PASSWORD") ?? Environment.GetEnvironmentVariable("COLLEAGUE_CASTLE_EMAIL_PASSWORD");
+builder.Services.AddFluentEmail("admin@colleaguecastle.in")
+                .AddMailKitSender(new SmtpClientOptions
+                {
+                    Server = "smtp.gmail.com",
+                    Port = 587,
+                    Password = password,
+                    UseSsl = false,
+                    User = "Test"
+                });
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
+builder.Services.AddAuthentication().AddMicrosoftAccount(microsoftOptions =>
+{
+    microsoftOptions.ClientId = builder.Configuration.GetValue<string>("Authentication:Microsoft:ClientId") ?? Environment.GetEnvironmentVariable("Authentication:Microsoft:ClientId");
+    microsoftOptions.ClientSecret = builder.Configuration.GetValue<string>("Authentication:Microsoft:ClientSecret") ?? Environment.GetEnvironmentVariable("Authentication:Microsoft:ClientSecret");
+});
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddSingleton<ISecretService, SecretService>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddScoped<IGooglePlaceService, GooglePlaceService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddRadzenComponents();
