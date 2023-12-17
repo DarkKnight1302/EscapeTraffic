@@ -12,6 +12,18 @@
     <label for="sourceLocation">Source Location:</label>
     <input type="text" class="form-control" id="sourceLocation" style="max-width: 720px;"
     @bind="sourceLocation" @oninput="OnSourceLocationInput" />
+    @{
+        bool showSourceDropdown = sourceSuggestions.Any();
+    }
+    @if (showSourceDropdown)
+    {
+        <select class="form-control" name="sourceLocationSelect" title="Select Source Location" id="sourceLocationSelect" style="max-width: 720px;" @onchange="OnSourceLocationSelected">
+            @foreach (var suggestion in sourceSuggestions)
+            {
+                <option value="@suggestion.PlaceId">@suggestion.Description</option>
+            }
+        </select>
+    }
 </div>
 
 <br />
@@ -19,6 +31,18 @@
     <label for="destinationLocation">Destination Location:</label>
     <input type="text" class="form-control" id="destinationLocation" style="max-width: 720px;"
     @bind="destinationLocation" @oninput="OnDestinationLocationInput" />
+    @{
+        bool destinationDropDown = destinationSuggestions.Any();
+    }
+    @if (destinationDropDown)
+    {
+        <select class="form-control" name="sourceLocationSelect" title="Select Destination Location" id="sourceLocationSelect" @onchange="OnSourceLocationSelected">
+            @foreach (var suggestion in destinationSuggestions)
+            {
+                <option value="@suggestion.PlaceId">@suggestion.Description</option>
+            }
+        </select>
+    }
 </div>
 <br />
 <div class="form-row mb-3">
@@ -41,8 +65,8 @@
     private string destinationLocation { get; set; }
     private DateTime startTime { get; set; }
     private DateTime endTime { get; set; }
-    private List<string> sourceSuggestions { get; set; } = new List<string>();
-    private List<string> destinationSuggestions { get; set; } = new List<string>();
+    private IEnumerable<PlacePrediction> sourceSuggestions { get; set; } = new List<PlacePrediction>();
+    private IEnumerable<PlacePrediction> destinationSuggestions { get; set; } = new List<PlacePrediction>();
     private System.Threading.Timer sourceTimer;
     private System.Threading.Timer destinationTimer;
 
@@ -52,10 +76,17 @@
         sourceTimer?.Dispose(); // Dispose previous timer if it exists
         sourceTimer = new System.Threading.Timer((state) =>
         {
-            IEnumerable<PlacePrediction> placePredictions = googlePlaceService.GetSuggestionsAsync(sourceLocation).Result;
+            sourceSuggestions = googlePlaceService.GetSuggestionsAsync(sourceLocation).Result;
 
-            StateHasChanged(); // Trigger re-render after suggestions are updated
+            InvokeAsync(() => StateHasChanged());
+             // Trigger re-render after suggestions are updated
         }, null, 2000, System.Threading.Timeout.Infinite);
+    }
+
+    private void OnSourceLocationSelected(ChangeEventArgs e)
+    {
+        // Handle the selected source location, e.g., store the selected value
+        // You can access the selected value using e.Value
     }
 
     private async void OnDestinationLocationInput(ChangeEventArgs e)
@@ -64,8 +95,8 @@
         destinationTimer?.Dispose(); // Dispose previous timer if it exists
         destinationTimer = new System.Threading.Timer((state) =>
         {
-            IEnumerable<PlacePrediction> placePredictions = googlePlaceService.GetSuggestionsAsync(destinationLocation).Result;
-            StateHasChanged(); // Trigger re-render after suggestions are updated
+            destinationSuggestions = googlePlaceService.GetSuggestionsAsync(destinationLocation).Result;
+            InvokeAsync(() => StateHasChanged());// Trigger re-render after suggestions are updated
         }, null, 2000, System.Threading.Timeout.Infinite);
     }
 
