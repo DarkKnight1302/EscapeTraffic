@@ -36,8 +36,8 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 builder.Services.AddAuthentication().AddMicrosoftAccount(microsoftOptions =>
 {
-    microsoftOptions.ClientId = builder.Configuration.GetValue<string>("Authentication:Microsoft:ClientId") ?? Environment.GetEnvironmentVariable("Authentication:Microsoft:ClientId");
-    microsoftOptions.ClientSecret = builder.Configuration.GetValue<string>("Authentication:Microsoft:ClientSecret") ?? Environment.GetEnvironmentVariable("Authentication:Microsoft:ClientSecret");
+    microsoftOptions.ClientId = builder.Configuration.GetValue<string>("Authentication_Microsoft_ClientId") ?? Environment.GetEnvironmentVariable("Authentication_Microsoft_ClientId");
+    microsoftOptions.ClientSecret = builder.Configuration.GetValue<string>("Authentication_Microsoft_ClientSecret") ?? Environment.GetEnvironmentVariable("Authentication_Microsoft_ClientSecret");
 });
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddSingleton<ISecretService, SecretService>();
