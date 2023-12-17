@@ -15,7 +15,7 @@ using TrafficEscape.Services.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection1") ?? Environment.GetEnvironmentVariable("DefaultConnection1");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? Environment.GetEnvironmentVariable("DefaultConnection");
 var password = builder.Configuration.GetValue<string>("COLLEAGUE_CASTLE_EMAIL_PASSWORD") ?? Environment.GetEnvironmentVariable("COLLEAGUE_CASTLE_EMAIL_PASSWORD");
 builder.Services.AddFluentEmail("admin@colleaguecastle.in")
                 .AddMailKitSender(new SmtpClientOptions
